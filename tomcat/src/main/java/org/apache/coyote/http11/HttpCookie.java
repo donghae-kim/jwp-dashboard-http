@@ -1,5 +1,7 @@
 package org.apache.coyote.http11;
 
+import org.apache.coyote.http11.util.Parser;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,6 +9,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class HttpCookie {
+    private static final String JSESSIONID = "JSESSIONID";
     private final Map<String, String> cookies;
 
     private HttpCookie(final Map<String, String> cookies) {
@@ -16,10 +19,7 @@ public class HttpCookie {
     public static HttpCookie parseCookie(String cookie) {
         Map<String,String> parsedCookie = new HashMap<>();
         if(cookie!=null) {
-            parsedCookie = Arrays.stream(cookie.split(";= "))
-                    .takeWhile(it -> !it.isEmpty())
-                    .map(it -> it.split("="))
-                    .collect(Collectors.toMap(it -> it[0], it -> it[1]));
+            parsedCookie = Parser.cookieParse(cookie);
         }
 
         return new HttpCookie(parsedCookie);
@@ -27,11 +27,11 @@ public class HttpCookie {
 
     public String makeCookieValue(UUID uuid){
 
-        return "JSESSIONID" + "=" + uuid;
+        return JSESSIONID + "=" + uuid;
     }
 
     public boolean checkIdInCookie(){
-        return cookies.containsKey("JSESSIONID");
+        return cookies.containsKey(JSESSIONID);
     }
 
     public String getValue(String key){

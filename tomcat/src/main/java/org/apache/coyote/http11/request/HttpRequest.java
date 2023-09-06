@@ -1,5 +1,8 @@
 package org.apache.coyote.http11.request;
 
+import org.apache.coyote.http11.HttpCookie;
+import org.apache.coyote.http11.HttpMethod;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,8 +34,24 @@ public class HttpRequest {
         return requestHeaders;
     }
 
-    public RequestURL getRequestURL() {
-        return requestURL;
+    public HttpCookie getCookies(){
+        return requestHeaders.getCookie();
+    }
+
+    public String getUrl() {
+        return requestURL.getUrl();
+    }
+
+    public HttpMethod getMethod() {
+        return requestURL.getMethod();
+    }
+
+    public String getAbsolutePath() {
+        return requestURL.getAbsolutePath();
+    }
+
+    public String getExtension(){
+        return requestURL.getExtension();
     }
 
     public String getRequestBody() {

@@ -63,12 +63,16 @@ public class RequestURL {
 
     public String getAbsolutePath() {
         String absolutePath = url;
+        if(absolutePath.equals("/")){
+            return absolutePath;
+        }
         if (absolutePath.contains(QUERY_STRING_DELIMITER)) {
             absolutePath = absolutePath.split(NON_RESERVED_QUERY_PARAM_DELIMITER)[0];
         }
         if (!absolutePath.contains(EXTENSION_DELIMITER)) {
             absolutePath += DEFAULT_EXTENSION;
         }
+
         return absolutePath;
     }
 
