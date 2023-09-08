@@ -5,56 +5,57 @@ import org.apache.coyote.http11.HttpMethod;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.util.Map;
 
 public class HttpRequest {
-    private final RequestURL requestURL;
+    private final RequestLine requestLine;
     private final RequestHeaders requestHeaders;
     private final RequestBody requestBody;
     private static final String CONTENT_LENGTH = "Content-Length";
 
-    private HttpRequest(final RequestURL requestURL, final RequestHeaders requestHeaders, final RequestBody requestBody) {
-        this.requestURL = requestURL;
+    private HttpRequest(final RequestLine requestLine, final RequestHeaders requestHeaders, final RequestBody requestBody) {
+        this.requestLine = requestLine;
         this.requestHeaders = requestHeaders;
         this.requestBody = requestBody;
     }
 
-    public static HttpRequest from(final InputStream inputStream) throws IOException {
-        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+    public static HttpRequest from(final BufferedReader br) throws IOException {
+        final RequestLine requestLine = RequestLine.from(br);
+        final RequestHeaders requestHeaders = RequestHeaders.from(br);
+        final RequestBody requestBody = RequestBody.of(requestHeaders.getValue(CONTENT_LENGTH), br);
 
-        final RequestURL requestURL = RequestURL.from(bufferedReader.readLine());
-        final RequestHeaders requestHeaders = RequestHeaders.from(bufferedReader);
-        final RequestBody requestBody = RequestBody.of(requestHeaders.getValue(CONTENT_LENGTH), bufferedReader);
-
-        return new HttpRequest(requestURL, requestHeaders, requestBody);
+        return new HttpRequest(requestLine, requestHeaders, requestBody);
     }
 
     public RequestHeaders getRequestHeaders() {
         return requestHeaders;
     }
 
-    public HttpCookie getCookies(){
+    public HttpCookie getCookies() {
         return requestHeaders.getCookie();
     }
 
     public String getUrl() {
-        return requestURL.getUrl();
+        return requestLine.getUrl();
     }
 
     public HttpMethod getMethod() {
-        return requestURL.getMethod();
+        return requestLine.getMethod();
     }
 
     public String getAbsolutePath() {
-        return requestURL.getAbsolutePath();
+        return requestLine.getAbsolutePath();
     }
 
-    public String getExtension(){
-        return requestURL.getExtension();
+    public String getExtension() {
+        return requestLine.getExtension();
     }
 
     public String getRequestBody() {
         return requestBody.getRequestBody();
+    }
+
+    public Map<String, String> getRequestParam() {
+        return requestLine.getRequestParam();
     }
 }

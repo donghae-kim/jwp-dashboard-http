@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-class RequestURLTest {
+class RequestLineTest {
 
     static Stream<Arguments> firstLines() {
         return Stream.of(
@@ -30,7 +30,7 @@ class RequestURLTest {
         // given
 
         // when & then
-        assertDoesNotThrow(() -> RequestURL.from(firstLine));
+        assertDoesNotThrow(() -> RequestLine.from(firstLine));
     }
 
     @ParameterizedTest(name = "{index} {0} RequestUrl을 생성 실패 테스트")
@@ -39,7 +39,7 @@ class RequestURLTest {
         // given
 
         // when & then
-        assertThatThrownBy(() -> RequestURL.from(firstLine))
+        assertThatThrownBy(() -> RequestLine.from(firstLine))
                 .isInstanceOf(InvalidRequestLineException.class)
                 .hasMessage("잘못된 RequestURL입니다.");
     }
@@ -48,10 +48,10 @@ class RequestURLTest {
     @MethodSource("firstLines")
     void getAbsolutePath(final String firstLine) {
         // given
-        final RequestURL requestURL = RequestURL.from(firstLine);
+        final RequestLine requestLine = RequestLine.from(firstLine);
 
         // when
-        final String absolutePath = requestURL.getAbsolutePath();
+        final String absolutePath = requestLine.getAbsolutePath();
 
         // then
         assertThat(absolutePath).isEqualTo("/ocean.html");
@@ -62,10 +62,10 @@ class RequestURLTest {
     void getExtension() {
         // given
         final String firstLine = "GET /ocean.css HTTP/1.1";
-        final RequestURL requestURL = RequestURL.from(firstLine);
+        final RequestLine requestLine = RequestLine.from(firstLine);
 
         // when
-        final String extension = requestURL.getExtension();
+        final String extension = requestLine.getExtension();
 
         // then
         assertThat(extension).isEqualTo("css");

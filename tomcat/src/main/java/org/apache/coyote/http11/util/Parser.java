@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 
 public class Parser {
 
-    public static Map<String, String> queryParamParse(final String requestBody) {
-        return Arrays.stream(requestBody.split("&")).takeWhile(it -> !it.isEmpty())
+    public static Map<String, String> queryParamParse(final String param) {
+        return Arrays.stream(param.split("&")).takeWhile(it -> !it.isEmpty())
                 .map(it -> it.split("=")).collect(Collectors.toMap(it -> it[0], it -> it[1]));
     }
 

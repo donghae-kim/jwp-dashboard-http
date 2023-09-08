@@ -36,6 +36,6 @@ public class RegisterHandler {
         final User registeredUser = new User(requestParam.get(ACCOUNT), requestParam.get(PASSWORD), requestParam.get(EMAIL));
 
         InMemoryUserRepository.save(registeredUser);
-        return HttpResponse.foundResponse(httpRequest, INDEX);
+        return HttpResponse.foundResponse(httpRequest,INDEX);
     }
 }

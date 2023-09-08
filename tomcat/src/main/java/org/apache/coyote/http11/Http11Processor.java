@@ -8,15 +8,19 @@ import org.apache.catalina.session.SessionManager;
 import org.apache.coyote.Processor;
 import org.apache.coyote.http11.exception.NotCorrectPasswordException;
 import org.apache.coyote.http11.exception.NotFoundAccountException;
+import org.apache.coyote.http11.exception.ResourceNotFoundException;
 import org.apache.coyote.http11.handler.BasicHandler;
 import org.apache.coyote.http11.handler.LoginHandler;
 import org.apache.coyote.http11.handler.RegisterHandler;
 import org.apache.coyote.http11.request.HttpRequest;
 import org.apache.coyote.http11.response.HttpResponse;
+import org.apache.coyote.http11.response.ResponseHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,6 +29,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.apache.coyote.http11.response.HttpResponse.foundResponse;
+
 public class Http11Processor implements Runnable, Processor {
 
     private static final Logger log = LoggerFactory.getLogger(Http11Processor.class);
@@ -32,6 +38,11 @@ public class Http11Processor implements Runnable, Processor {
     private static final String STATIC_PATH = "static";
     private static final String LOGIN_PATH = "/login.html";
     private static final String REGISTER_PATH = "/register.html";
+    private static final String LOCATION = "Location";
+    private static final String UNAUTHORIZED_PATH = "/401.html";
+    private static final String NOT_FOUND_PATH = "/404.html";
+    private static final String INTERNAL_SERVER_PATH = "/500.html";
+
 
     private final Socket connection;
 
@@ -48,15 +59,28 @@ public class Http11Processor implements Runnable, Processor {
     @Override
     public void process(final Socket connection) {
         try (final var inputStream = connection.getInputStream();
-             final var outputStream = connection.getOutputStream()) {
+             final var outputStream = connection.getOutputStream();
+             final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
 
-            final HttpRequest httpRequest = HttpRequest.from(inputStream);
-            final HttpResponse response = interceptHandler(httpRequest);
+            final HttpRequest httpRequest = HttpRequest.from(br);
+            final HttpResponse response = getRespond(httpRequest);
 
             outputStream.write(response.toResponse().getBytes());
             outputStream.flush();
         } catch (IOException | UncheckedServletException e) {
             log.error(e.getMessage(), e);
+        }
+    }
+
+    private HttpResponse getRespond(final HttpRequest httpRequest) {
+        try {
+            return interceptHandler(httpRequest);
+        } catch (NotFoundAccountException | NotCorrectPasswordException e) {
+            return HttpResponse.foundResponse(httpRequest,UNAUTHORIZED_PATH);
+        } catch (ResourceNotFoundException e) {
+            return HttpResponse.foundResponse(httpRequest,NOT_FOUND_PATH);
+        } catch (Exception e) {
+            return HttpResponse.foundResponse(httpRequest,INTERNAL_SERVER_PATH);
         }
     }
 
